@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 
@@ -6,9 +8,7 @@ void main() => runApp(MaterialApp(
     home: SensorData()
 ));
 
-bool pressStart = false;
-bool pressStop = false;
-String insideText = "Click Above To Start";
+
 // Stateless Widget Home
 class SensorData extends StatefulWidget{
   @override
@@ -17,6 +17,11 @@ class SensorData extends StatefulWidget{
 
 class _SensorDataState extends State<SensorData> {
   @override
+
+  bool pressStart = false;
+  bool pressStop = false;
+  String insideText = "Click Above To Start";
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -30,14 +35,12 @@ class _SensorDataState extends State<SensorData> {
             padding: EdgeInsets.fromLTRB(150, 0, 0, 0),
             child: ElevatedButton.icon(
               onPressed: (){
-                if(!pressStart) {
-                  pressStart = true;
+                StartChecking();
+                /*if(!pressStart) {
                   StartChecking();
-                  pressStop = false;
-                  pressStart = false;
                 }
                 else
-                  Null;
+                  Null;*/
               },
               icon: Icon(
                   Icons.start
@@ -71,38 +74,74 @@ class _SensorDataState extends State<SensorData> {
   }
   // onPress Function
   void StartChecking(){
+    if(!pressStart) {
+      pressStart = true;
+      late Timer _timer;
+      int i = 0;
+      print("press Start = ${pressStart}");
+      if (!pressStop) {
+        _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
+          if (!pressStop) {
+            setState(() {
+              insideText = "i = ${i}";
+              i++;
+            });
+          }
+          else {
+            print("Inside");
+            pressStop = false;
+            _timer.cancel();
+          }
+        });
+      }
+      else {
+        print("Stop Button is pressed");
+      }
+    }
+    else
+      Null;
+
+  }
+  /*void StartChecking(){
+    pressStart = true;
+    late Timer _timer;
     int i =0;
-    setState(() {
-      if(!pressStop) {
-        while (!pressStop) {
-          Future.delayed(const Duration(milliseconds: 2000), (){
-            print("object");
+    print("press Start = ${pressStart}");
+    if(!pressStop){
+      _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
+        if(!pressStop){
+          setState(() {
+            insideText = "i = ${i}";
             i++;
-            insideText = "Data Received ${i}";
           });
         }
-        i = 0;
-      }
-      else{
-        print("Inside else StartChecking");
-        Null;
-      }
-    });
-  }
+        else {
+          print("Inside");
+          pressStop = false;
+          _timer.cancel();
+        }
+      });
+
+    }
+    else{
+      print("Stop Button is pressed");
+    }
+
+  }*/
 
   void StopChecking()
   {
-   if(pressStart)
-   {
-       setState(() {
-         pressStart = false;
-         pressStop = true;
-         insideText = "Click Above To Start";
-       });
-   }
-   else {
-     print("Inside else StopChecking");
-     Null;
-   }
+    if(pressStart)
+    {
+      pressStart = false;
+      pressStop = true;
+      setState(() {
+        insideText = "Click Above To Start";
+      });
+
+    }
+    else {
+      Null;
+    }
   }
 }
