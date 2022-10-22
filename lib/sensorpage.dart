@@ -6,9 +6,16 @@ void main() => runApp(MaterialApp(
     home: SensorData()
 ));
 
+bool pressStart = false;
+bool pressStop = false;
+String insideText = "Click Above To Start";
 // Stateless Widget Home
+class SensorData extends StatefulWidget{
+  @override
+  State<SensorData> createState() => _SensorDataState();
+}
 
-class SensorData extends StatelessWidget{
+class _SensorDataState extends State<SensorData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +29,16 @@ class SensorData extends StatelessWidget{
           Container(
             padding: EdgeInsets.fromLTRB(150, 0, 0, 0),
             child: ElevatedButton.icon(
-              onPressed: () {  },
+              onPressed: (){
+                if(!pressStart) {
+                  pressStart = true;
+                  StartChecking();
+                  pressStop = false;
+                  pressStart = false;
+                }
+                else
+                  Null;
+              },
               icon: Icon(
                   Icons.start
               ),
@@ -30,24 +46,63 @@ class SensorData extends StatelessWidget{
 
             ),
           ),
+
           Container(
             padding: EdgeInsets.fromLTRB(150, 0, 0, 0),
-            child: Text("Data Receiving"),
+            child:Text("$insideText"),
           ),
           Container(
             padding: EdgeInsets.fromLTRB(150, 0, 0, 0),
             child: ElevatedButton.icon(
-              onPressed: () {  },
+              onPressed: () {
+                StopChecking();
+              },
               icon: Icon(
                   Icons.pause
               ),
               label: Text("Stop"),
             ),
-          )
+          ),
+
         ],
       ),
 
     );
   }
+  // onPress Function
+  void StartChecking(){
+    int i =0;
+    setState(() {
+      if(!pressStop) {
+        while (!pressStop) {
+          Future.delayed(const Duration(milliseconds: 2000), (){
+            print("object");
+            i++;
+            insideText = "Data Received ${i}";
+          });
+        }
+        i = 0;
+      }
+      else{
+        print("Inside else StartChecking");
+        Null;
+      }
+    });
+  }
 
+  void StopChecking()
+  {
+   if(pressStart)
+   {
+       setState(() {
+         pressStart = false;
+         pressStop = true;
+         insideText = "Click Above To Start";
+       });
+   }
+   else {
+     print("Inside else StopChecking");
+     Null;
+   }
+  }
 }
