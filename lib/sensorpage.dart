@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_sensors/flutter_sensors.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 
 void main() => runApp(MaterialApp(
@@ -73,7 +73,43 @@ class _SensorDataState extends State<SensorData> {
     );
   }
   // onPress Function
+
+  //SensorPlus
   void StartChecking(){
+    var e;
+    if(!pressStart) {
+      pressStart = true;
+      late Timer _timer;
+      print("press Start = ${pressStart}");
+      if (!pressStop) {
+        _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
+          if (!pressStop) {
+            accelerometerEvents.listen((AccelerometerEvent event) {
+              e = event;
+            });
+            setState(() {
+              insideText = "${e}";
+
+            });
+          }
+          else {
+            print("Inside");
+            pressStop = false;
+            _timer.cancel();
+          }
+        });
+      }
+      else {
+        print("Stop Button is pressed");
+      }
+    }
+    else
+      Null;
+
+  }
+
+  //EXTRA
+  /*void StartChecking(){
     if(!pressStart) {
       pressStart = true;
       late Timer _timer;
@@ -100,32 +136,6 @@ class _SensorDataState extends State<SensorData> {
     }
     else
       Null;
-
-  }
-  /*void StartChecking(){
-    pressStart = true;
-    late Timer _timer;
-    int i =0;
-    print("press Start = ${pressStart}");
-    if(!pressStop){
-      _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
-        if(!pressStop){
-          setState(() {
-            insideText = "i = ${i}";
-            i++;
-          });
-        }
-        else {
-          print("Inside");
-          pressStop = false;
-          _timer.cancel();
-        }
-      });
-
-    }
-    else{
-      print("Stop Button is pressed");
-    }
 
   }*/
 
