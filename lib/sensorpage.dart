@@ -1,8 +1,16 @@
 import 'dart:async';
+//import 'dart:html';
+
+
 
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:csv/csv.dart';
+import 'package:external_path/external_path.dart';
+import 'package:permission_handler/permission_handler.dart';
+//import 'package:path_provider/path_provider.dart';
 
+import 'dart:io';
 
 void main() => runApp(MaterialApp(
     home: SensorData()
@@ -36,11 +44,6 @@ class _SensorDataState extends State<SensorData> {
             child: ElevatedButton.icon(
               onPressed: (){
                 StartChecking();
-                /*if(!pressStart) {
-                  StartChecking();
-                }
-                else
-                  Null;*/
               },
               icon: Icon(
                   Icons.start
@@ -74,20 +77,41 @@ class _SensorDataState extends State<SensorData> {
   }
   // onPress Function
 
+  @override
+  void initState(){
+    getPermission();
+  }
+
+  Future<void> getPermission() async {
+    PermissionStatus storage = await Permission.storage.request();
+  }
+  List<List<dynamic>> dataList= [["Time","X","Y","Z"]];
   //SensorPlus
   void StartChecking(){
+
     var e;
+    DateTime _now;
     if(!pressStart) {
       pressStart = true;
       late Timer _timer;
       print("press Start = ${pressStart}");
       if (!pressStop) {
-        _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
+        _timer = Timer.periodic(Duration(milliseconds: 200), (timer) {
           if (!pressStop) {
-            accelerometerEvents.listen((AccelerometerEvent event) {
-              e = event;
-            });
+
             setState(() {
+              //Now
+              accelerometerEvents.listen((AccelerometerEvent event) {
+                List<dynamic> tmp = [];
+                _now = DateTime.now();
+                tmp.add('${_now.hour}:${_now.minute}:${_now.second}.${_now.millisecond}');
+                tmp.add(event.x);
+                tmp.add(event.y);
+                tmp.add(event.z);
+                dataList.add(tmp);
+                e = event;
+              });//Now
+              //before
               insideText = "${e}";
 
             });
@@ -108,44 +132,39 @@ class _SensorDataState extends State<SensorData> {
 
   }
 
-  //EXTRA
-  /*void StartChecking(){
-    if(!pressStart) {
-      pressStart = true;
-      late Timer _timer;
-      int i = 0;
-      print("press Start = ${pressStart}");
-      if (!pressStop) {
-        _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
-          if (!pressStop) {
-            setState(() {
-              insideText = "i = ${i}";
-              i++;
-            });
-          }
-          else {
-            print("Inside");
-            pressStop = false;
-            _timer.cancel();
-          }
-        });
-      }
-      else {
-        print("Stop Button is pressed");
-      }
-    }
-    else
-      Null;
 
-  }*/
+  /*
+  Future<void> getPath() async {
+      String path = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOADS);
+      setState(() {
+        print(path); // /storage/emulated/0/Download
+        dir = path;
+      });
 
-  void StopChecking()
-  {
+   */
+
+
+  Future<void> StopChecking()
+  async {
     if(pressStart)
     {
       pressStart = false;
       pressStop = true;
-      setState(() {
+      dataList.removeLast();
+      String csv = const ListToCsvConverter().convert(dataList);
+
+      String dir = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOADS);
+      //String dir = "/storage/emulated/0/Downloads";
+      String file = "$dir";
+      File f = File('$file/filename.csv');
+      f.writeAsString(csv);
+      print(dir);
+
+
+      // dataList.removeLast();
+      print(dataList);
+      setState((){
+        //String csv = const ListToCsvConverter().convert(dataList);
         insideText = "Click Above To Start";
       });
 
@@ -154,4 +173,22 @@ class _SensorDataState extends State<SensorData> {
       Null;
     }
   }
+  /*void StopChecking()
+  {
+    if(pressStart)
+    {
+      pressStart = false;
+      pressStop = true;
+      setState(() {
+        dataList.removeLast();
+        print(dataList);
+        String csv = const ListToCsvConverter().convert(dataList);
+        insideText = "Click Above To Start";
+      });
+
+    }
+    else {
+      Null;
+    }
+  }*/
 }
